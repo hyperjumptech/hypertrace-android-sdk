@@ -1,15 +1,14 @@
 package tech.hyperjump.hypertrace.streetpass.uploader
 
 import com.google.gson.annotations.SerializedName
-import io.ktor.client.call.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import tech.hyperjump.hypertrace.HyperTraceSdk
 import tech.hyperjump.hypertrace.httpclient.ktorClient
 import tech.hyperjump.hypertrace.logging.CentralLog
-import tech.hyperjump.hypertrace.streetpass.persistence.StreetPassRecord
 import tech.hyperjump.hypertrace.streetpass.persistence.StreetPassRecordDatabase
 
 internal object TraceUploader {
@@ -57,13 +56,23 @@ internal object TraceUploader {
             onSuccess: () -> Unit,
             onError: () -> Unit,
     ) {
-        val records = StreetPassRecordDatabase.getDatabase(HyperTraceSdk.appContext)
-                .recordDao()
-                .getCurrentRecords()
-                .map { record ->
-                    record.timestamp = record.timestamp / 1000
-                    return@map record
-                }
+        val records = withContext(Dispatchers.IO) {
+            StreetPassRecordDatabase.getDatabase(HyperTraceSdk.appContext)
+                    .recordDao()
+                    .getCurrentRecords()
+                    .map { record ->
+                        EncounterPayload(
+                                v = record.v,
+                                msg = record.msg,
+                                modelC = record.modelC,
+                                modelP = record.modelP,
+                                org = record.org,
+                                rssi = record.rssi,
+                                timestamp = record.timestamp / 1000,
+                                txPower = record.txPower,
+                        )
+                    }
+        }
 
         val uploadBody = StreetPassUploadBody(
                 uid = HyperTraceSdk.CONFIG.userId,
@@ -73,7 +82,7 @@ internal object TraceUploader {
 
         val url = HyperTraceSdk.CONFIG.baseUrl + SERVICE_UPLOAD_RECORDS
         try {
-            ktorClient.get<String>(url) {
+            ktorClient.post<String>(url) {
                 contentType(ContentType.Application.Json)
                 body = uploadBody
             }
@@ -87,6 +96,32 @@ internal object TraceUploader {
     internal data class StreetPassUploadBody(
             @SerializedName("uid") val uid: String,
             @SerializedName("uploadToken") val uploadToken: String,
-            @SerializedName("traces") val traces: List<StreetPassRecord>,
+            @SerializedName("traces") val traces: List<EncounterPayload>,
+    )
+
+    internal data class EncounterPayload(
+            @SerializedName("v")
+            val v: Int,
+
+            @SerializedName("msg")
+            val msg: String,
+
+            @SerializedName("org")
+            val org: String,
+
+            @SerializedName("modelP")
+            val modelP: String,
+
+            @SerializedName("modelC")
+            val modelC: String,
+
+            @SerializedName("rssi")
+            val rssi: Int,
+
+            @SerializedName("txPower")
+            val txPower: Int?,
+
+            @SerializedName("timestamp")
+            val timestamp: Long
     )
 }

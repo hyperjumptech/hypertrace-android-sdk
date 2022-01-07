@@ -3,6 +3,8 @@ package tech.hyperjump.example
 import android.Manifest
 import android.app.Notification
 import android.bluetooth.BluetoothManager
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -20,6 +22,8 @@ import tech.hyperjump.hypertrace.scandebug.ScanDebugActivity
 import tech.hyperjump.hypertrace.streetpassdebug.StreetPassDebugActivity
 
 class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
+
+    private var userId = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -32,6 +36,12 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         }
         button_handshake_pin.setOnClickListener { getHandshakePin() }
         button_upload_contact.setOnClickListener { uploadContactTrace() }
+        button_copy_uid.setOnClickListener {
+            val clipboardService = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("UID", userId)
+            clipboardService.setPrimaryClip(clip)
+            toast("UID Copied: $userId")
+        }
     }
 
     private fun requestBluetooth(): Boolean {
@@ -108,8 +118,9 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     }
 
     private fun buildConfig(): HyperTraceSdk.Config {
+        userId = generateUserId(21)
         return HyperTraceSdk.Config(
-                userId = generateUserId(21),
+                userId = userId,
                 organization = "ID_HYPERJUMP",
                 baseUrl = "http://20.212.164.71:8080/",
                 bleServiceUuid = "A6BA4286-C550-4794-A888-9467EF0B31A8",
@@ -124,7 +135,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9')
         return List(length) {
             allowedChars.random()
-        }.joinToString()
+        }.joinToString("")
     }
 
     private fun createForegroundNotification(context: Context): Notification {
