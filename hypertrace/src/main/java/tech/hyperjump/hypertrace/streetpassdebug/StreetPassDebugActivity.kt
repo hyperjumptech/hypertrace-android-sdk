@@ -6,11 +6,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import tech.hyperjump.hypertrace.BuildConfig
-import tech.hyperjump.hypertrace.databinding.ActivityStreetPassDebugBinding
-import tech.hyperjump.hypertrace.streetpass.persistence.StreetPassRecordDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import tech.hyperjump.hypertrace.HyperTraceSdk
+import tech.hyperjump.hypertrace.databinding.ActivityStreetPassDebugBinding
+import tech.hyperjump.hypertrace.streetpass.persistence.StreetPassRecordDatabase
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -23,7 +23,7 @@ class StreetPassDebugActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         viewBinding = ActivityStreetPassDebugBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
-        if (BuildConfig.DEBUG) showStreetPassRecords()
+        if (HyperTraceSdk.CONFIG.debug) showStreetPassRecords()
     }
 
     private fun showStreetPassRecords() {

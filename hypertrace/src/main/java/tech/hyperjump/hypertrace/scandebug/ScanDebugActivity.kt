@@ -6,11 +6,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import tech.hyperjump.hypertrace.BuildConfig
-import tech.hyperjump.hypertrace.databinding.ActivityScanDebugBinding
-import tech.hyperjump.hypertrace.streetpass.persistence.StreetPassRecordDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import tech.hyperjump.hypertrace.HyperTraceSdk
+import tech.hyperjump.hypertrace.databinding.ActivityScanDebugBinding
+import tech.hyperjump.hypertrace.streetpass.persistence.StreetPassRecordDatabase
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -23,7 +23,7 @@ class ScanDebugActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityScanDebugBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        if (BuildConfig.DEBUG) showStatusRecords()
+        if (HyperTraceSdk.CONFIG.debug) showStatusRecords()
     }
 
     private fun showStatusRecords() {

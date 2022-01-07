@@ -43,6 +43,7 @@ HypertraceSdk.startService(config)
 | baseUrl                            | string   | URL for [Hypertrace server](https://github.com/hyperjumptech/hypertrace) implementation. **Must end** with slash `/` character. | **YES**   | -       |
 | bleServiceUuid                     | string   | BLE service UUID. **Must be** a valid UUID.                                                                                     | **YES**   | -       |
 | bleCharacteristicUuid              | string   | BLE characteristic UUID. **Must be** a valid UUID.                                                                              | **YES**   | -       |
+| debug                              | boolean  | Enable showing street pass list and bluetooth scanning activity                                                                 | **NO**    | -       |
 | keepAliveService                   | boolean  | If `true`, Hypertrace will try to restart service everytime it is killed.                                                       | **NO**    | `false` |
 
 #### Get handshake PIN
