@@ -24,12 +24,14 @@ implementation fileTree(dir: "libs", include: ["*.jar", "*.aar"])
 
 ### How to use
 
+#### Start background service
+
 ```kotlin
 val config = HypertraceSdk.Config()
 HypertraceSdk.startService(config)
 ```
 
-### Available configuration
+##### Available configuration
 
 | Field                              | Type     | Description                                                                                                                     | Mandatory | Default |
 | :--------------------------------- | :------- | :------------------------------------------------------------------------------------------------------------------------------ | :-------- | :------ |
@@ -42,6 +44,28 @@ HypertraceSdk.startService(config)
 | bleServiceUuid                     | string   | BLE service UUID. **Must be** a valid UUID.                                                                                     | **YES**   | -       |
 | bleCharacteristicUuid              | string   | BLE characteristic UUID. **Must be** a valid UUID.                                                                              | **YES**   | -       |
 | keepAliveService                   | boolean  | If `true`, Hypertrace will try to restart service everytime it is killed.                                                       | **NO**    | `false` |
+
+#### Get handshake PIN
+
+`getHandshakePin` will fetch a PIN from server for identification from authority.
+Returns `string` or `null` if failed.
+
+```kotlin
+HypertraceSdk.getHandshakePin()
+```
+
+#### Upload contact encounter
+
+`uploadEncounterRecords` will upload recorded BLE encounters in local to server.
+Params:
+
+- secret: temporary password provided by authority.
+- onSuccess: kotlin higher-order function callback on successful uploads.
+- onError: kotlin higher-order function callback on failed uploads.
+
+```kotlin
+HypertraceSdk.uploadEncounterRecords(secret, onSuccess = {}, onError = {})
+```
 
 ### Debugging
 
