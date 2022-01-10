@@ -102,7 +102,7 @@ object HyperTraceSdk {
             val keepAliveService: Boolean = false,
             val scanDuration: Long = 10_000,
             val minScanInterval: Long = 30_000,
-            val maxScanInterval: Long = 60_000,
+            val maxScanInterval: Long = 40_000,
             val advertisingDuration: Long = 180_000, // 30 minutes
             val advertisingInterval: Long = 6_000,
             val purgeRecordInterval: Long = 86_400_000, // 24 hours
