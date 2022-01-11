@@ -2,6 +2,22 @@
 
 Kotlin OpenTrace implementation based on [BlueTrace specification](https://bluetrace.io/static/bluetrace_whitepaper-938063656596c104632def383eb33b3c.pdf).
 
+### Table of Content
+
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [How to use](#how-to-use)
+  - [Start background service](#start-background-service)
+    - [Available configuration](#available-configuration)
+  - [Get handshake PIN](#get-handshake-pin)
+  - [Upload contact encounter](#upload-contact-encounter)
+- [Debugging](#debugging)
+- [Troubleshooting](#troubleshooting)
+- [Protocol version](#protocol-version)
+- [Security enhancement](#security-enhancements)
+- [Statement from Google](#statement-from-google)
+- [Changelog](#changelog)
+
 ### Requirements
 
 - Android API level 23+ (Android M)
@@ -89,7 +105,7 @@ Hypertrace SDK provides the following classes for debugging purposes:
 - `tech.hyperjump.hypertrace.scandebug.ScanDebugActivity` for bluetooth scanning status.
 - `tech.hyperjump.hypertrace.scandebug.StreetPassDebugActivity` for contact tracing records in local.
 
-### Toubleshooting
+### Troubleshooting
 
 - Foreground service get killed when app is paused on device model XXX.
   For non-AOSP users, you need to whitelist the application from OS' power manager. For further information, please refer to [Don't Kill My App](https://dontkillmyapp.com/) website.
