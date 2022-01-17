@@ -108,6 +108,7 @@ Hypertrace SDK provides the following classes for debugging purposes:
 ### Troubleshooting
 
 - Foreground service get killed when app is paused on device model XXX.
+
   For non-AOSP users, you need to whitelist the application from OS' power manager. For further information, please refer to [Don't Kill My App](https://dontkillmyapp.com/) website.
 
 ### Protocol Version
