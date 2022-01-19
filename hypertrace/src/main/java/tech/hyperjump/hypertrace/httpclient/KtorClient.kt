@@ -7,13 +7,16 @@ import io.ktor.client.features.logging.*
 import tech.hyperjump.hypertrace.HyperTraceSdk
 
 internal val ktorClient = HttpClient(OkHttp) {
-    install(JsonFeature) {
-        serializer = GsonSerializer()
-    }
-    val certificatePinnerConfig = HyperTraceSdk.CONFIG.certificatePinner
-    if (certificatePinnerConfig != null) {
-        engine {
-            config { certificatePinner(certificatePinnerConfig) }
+    install(JsonFeature) { serializer = GsonSerializer() }
+    engine {
+        config {
+            val configRunner = HyperTraceSdk.CONFIG.okHttpConfig
+            if (configRunner != null) {
+                this.apply(configRunner)
+                return@config
+            }
+            val certificatePinnerConfig = HyperTraceSdk.CONFIG.certificatePinner
+            if (certificatePinnerConfig != null) certificatePinner(certificatePinnerConfig)
         }
     }
 
