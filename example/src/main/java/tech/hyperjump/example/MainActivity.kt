@@ -16,10 +16,15 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.activity_main.*
+import okhttp3.*
 import pub.devrel.easypermissions.EasyPermissions
 import tech.hyperjump.hypertrace.HyperTraceSdk
 import tech.hyperjump.hypertrace.scandebug.ScanDebugActivity
 import tech.hyperjump.hypertrace.streetpassdebug.StreetPassDebugActivity
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
+import javax.net.ssl.SSLContext
+import javax.net.ssl.X509TrustManager
 
 class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
 
@@ -119,16 +124,36 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
 
     private fun buildConfig(): HyperTraceSdk.Config {
         userId = generateUserId(21)
+        val baseUrl = "https://108.136.118.250/"
+        val trustManager = object : X509TrustManager {
+            override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {
+            }
+
+            override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
+            }
+
+            override fun getAcceptedIssuers(): Array<X509Certificate> {
+                return arrayOf()
+            }
+        }
+        val sslContext = SSLContext.getInstance("SSL").apply {
+            init(null, arrayOf(trustManager), SecureRandom())
+        }
+
         return HyperTraceSdk.Config(
                 debug = true,
                 userId = userId,
                 organization = "ID_HYPERJUMP",
-                baseUrl = "http://108.136.118.250/",
+                baseUrl = baseUrl,
                 bleServiceUuid = "A6BA4286-C550-4794-A888-9467EF0B31A8",
                 bleCharacteristicUuid = "D1034710-B11E-42F2-BCA3-F481177D5BB2",
                 foregroundNotificationCreator = this::createForegroundNotification,
                 bluetoothFailedNotificationCreator = this::createBluetoothFailedNotification,
                 notificationChannelCreator = this::createNotificationChannel,
+                okHttpConfig = {
+                    sslSocketFactory(sslContext.socketFactory, trustManager)
+                    hostnameVerifier { hostname, _ -> baseUrl.contains(hostname) }
+                }
         )
     }
 
