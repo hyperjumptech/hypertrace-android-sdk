@@ -51,30 +51,31 @@ HypertraceSdk.startService(config)
 
 ##### Available configuration
 
-| Field                              | Type     | Description                                                                                                                     | Mandatory | Default       |
-| :--------------------------------- | :------- | :------------------------------------------------------------------------------------------------------------------------------ | :-------- | :------------ |
-| notificationChannelCreator         | Function | Kotlin higher-order function for SDK to create android notification channel. (Required for API level 26 / Android O).           | **YES**   | -             |
-| foregroundNotificationCreator      | Function | Kotlin higher-order function for SDK to create notification when service is actively running.                                   | **YES**   | -             |
-| bluetoothFailedNotificationCreator | Function | Kotlin higher-order function for SDK to create notification when service fails to access bluetooth and location permissions.    | **YES**   | -             |
-| userId                             | string   | Main application's user ID. **Must be** 21 characters.                                                                          | **YES**   | -             |
-| organization                       | string   | Application's organization name. Typically, this is a combination of `COUNTRY_CODE` and short organization name.                | **YES**   | -             |
-| baseUrl                            | string   | URL for [Hypertrace server](https://github.com/hyperjumptech/hypertrace) implementation. **Must end** with slash `/` character. | **YES**   | -             |
-| bleServiceUuid                     | string   | BLE service UUID. **Must be** a valid UUID.                                                                                     | **YES**   | -             |
-| bleCharacteristicUuid              | string   | BLE characteristic UUID. **Must be** a valid UUID.                                                                              | **YES**   | -             |
-| debug                              | boolean  | Enable showing street pass list and bluetooth scanning activity                                                                 | **NO**    | -             |
-| keepAliveService                   | boolean  | If `true`, Hypertrace will try to restart service everytime it is killed.                                                       | **NO**    | `false`       |
-| scanDuration                       | long     | Duration of each bluetooth scan action in **miliseconds.** Default to 10 seconds.                                               | **NO**    | 10_000        |
-| minScanInterval                    | long     | Minimum scan interval in **miliseconds.** Randomized between minScanInterval and maxScanInterval. Default to 30 seconds.        | **NO**    | 30_000        |
-| maxScanInterval                    | long     | Maximum scan interval in **miliseconds.** Randomized between minScanInterval and maxScanInterval. Default to 40 seconds.        | **NO**    | 40_000        |
-| advertisingDuration                | long     | Duration of each bluetooth advertising action in **miliseconds.** Default to 30 minutes.                                        | **NO**    | 180_000       |
-| advertisingInterval                | long     | Interval between bluetooth advertising action in **miliseconds.** Default to 6 seconds.                                         | **NO**    | 6_000         |
-| purgeRecordInterval                | long     | Interval between purge action of encounter's records in **miliseconds.** Default to 24 hours.                                   | **NO**    | 86_400_000    |
-| recordTTL                          | long     | The lifetime of encounter's records in **miliseconds.** Default to 21 days.                                                     | **NO**    | 1_814_400_000 |
-| maxPeripheralQueueTime             | long     | Maximum time of a peripheral to wait to be processed in **miliseconds.** Default to 10 seconds.                                 | **NO**    | 10_000        |
-| deviceConnectionTimeout            | long     | Maximum time of a peripheral read-write action in **miliseconds.** Default to 6 seconds.                                        | **NO**    | 6_000         |
-| deviceBlacklistDuration            | long     | Maximum time of a device to be blacklisted time in **miliseconds.** Default to 1.5 minutes.                                     | **NO**    | 90_000        |
-| temporaryIdCheckInterval           | long     | Interval between temporary IDs' supply check **miliseconds.** Default to 10 minutes.                                            | **NO**    | 600_000       |
-| bluetoothServiceHeartBeat          | long     | Interval between OpenTrace bluetooth service check **miliseconds.** Default to 15 minutes.                                      | **NO**    | 900_000       |
+| Field                              | Type              | Description                                                                                                                     | Mandatory | Default       |
+| :--------------------------------- | :---------------- | :------------------------------------------------------------------------------------------------------------------------------ | :-------- | :------------ |
+| notificationChannelCreator         | Function          | Kotlin higher-order function for SDK to create android notification channel. (Required for API level 26 / Android O).           | **YES**   | -             |
+| foregroundNotificationCreator      | Function          | Kotlin higher-order function for SDK to create notification when service is actively running.                                   | **YES**   | -             |
+| bluetoothFailedNotificationCreator | Function          | Kotlin higher-order function for SDK to create notification when service fails to access bluetooth and location permissions.    | **YES**   | -             |
+| userId                             | string            | Main application's user ID. **Must be** 21 characters.                                                                          | **YES**   | -             |
+| organization                       | string            | Application's organization name. Typically, this is a combination of `COUNTRY_CODE` and short organization name.                | **YES**   | -             |
+| baseUrl                            | string            | URL for [Hypertrace server](https://github.com/hyperjumptech/hypertrace) implementation. **Must end** with slash `/` character. | **YES**   | -             |
+| bleServiceUuid                     | string            | BLE service UUID. **Must be** a valid UUID.                                                                                     | **YES**   | -             |
+| bleCharacteristicUuid              | string            | BLE characteristic UUID. **Must be** a valid UUID.                                                                              | **YES**   | -             |
+| debug                              | boolean           | Enable showing street pass list and bluetooth scanning activity                                                                 | **NO**    | -             |
+| keepAliveService                   | boolean           | If `true`, Hypertrace will try to restart service everytime it is killed.                                                       | **NO**    | `false`       |
+| scanDuration                       | long              | Duration of each bluetooth scan action in **miliseconds.** Default to 10 seconds.                                               | **NO**    | 10_000        |
+| minScanInterval                    | long              | Minimum scan interval in **miliseconds.** Randomized between minScanInterval and maxScanInterval. Default to 30 seconds.        | **NO**    | 30_000        |
+| maxScanInterval                    | long              | Maximum scan interval in **miliseconds.** Randomized between minScanInterval and maxScanInterval. Default to 40 seconds.        | **NO**    | 40_000        |
+| advertisingDuration                | long              | Duration of each bluetooth advertising action in **miliseconds.** Default to 30 minutes.                                        | **NO**    | 180_000       |
+| advertisingInterval                | long              | Interval between bluetooth advertising action in **miliseconds.** Default to 6 seconds.                                         | **NO**    | 6_000         |
+| purgeRecordInterval                | long              | Interval between purge action of encounter's records in **miliseconds.** Default to 24 hours.                                   | **NO**    | 86_400_000    |
+| recordTTL                          | long              | The lifetime of encounter's records in **miliseconds.** Default to 21 days.                                                     | **NO**    | 1_814_400_000 |
+| maxPeripheralQueueTime             | long              | Maximum time of a peripheral to wait to be processed in **miliseconds.** Default to 10 seconds.                                 | **NO**    | 10_000        |
+| deviceConnectionTimeout            | long              | Maximum time of a peripheral read-write action in **miliseconds.** Default to 6 seconds.                                        | **NO**    | 6_000         |
+| deviceBlacklistDuration            | long              | Maximum time of a device to be blacklisted time in **miliseconds.** Default to 1.5 minutes.                                     | **NO**    | 90_000        |
+| temporaryIdCheckInterval           | long              | Interval between temporary IDs' supply check **miliseconds.** Default to 10 minutes.                                            | **NO**    | 600_000       |
+| bluetoothServiceHeartBeat          | long              | Interval between OpenTrace bluetooth service check **miliseconds.** Default to 15 minutes.                                      | **NO**    | 900_000       |
+| certificatePinner                  | CertificatePinner | Helper for certificate pinning provided by OkHttp. See [**Security Enhancements.**](#security-enhancements)                     | **NO**    | null          |
 
 #### Get handshake PIN
 
@@ -120,8 +121,7 @@ Version 1 of the protocol has been deprecated
 
 ### Security Enhancements
 
-SSL pinning is not included as part of the repo.
-It is recommended to add in a check for SSL certificate returned by the backend.
+Hypertrace uses [OkHttp v4.x](https://square.github.io/okhttp/) under the hood. We provide configurable certificate pinner, for implementation, refer to [CertificatePinner documentation.](https://square.github.io/okhttp/4.x/okhttp/okhttp3/-certificate-pinner/)
 
 ---
 

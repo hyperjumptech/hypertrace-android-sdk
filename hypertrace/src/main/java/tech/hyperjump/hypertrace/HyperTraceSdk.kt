@@ -7,6 +7,7 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.Keep
 import androidx.core.app.NotificationChannelCompat
+import okhttp3.CertificatePinner
 import pub.devrel.easypermissions.EasyPermissions
 import tech.hyperjump.hypertrace.idmanager.TempIDManager
 import tech.hyperjump.hypertrace.logging.CentralLog
@@ -112,6 +113,7 @@ object HyperTraceSdk {
             val bluetoothServiceHeartBeat: Long = 900_000, // 15 minutes
             val deviceConnectionTimeout: Long = 6_000,
             val deviceBlacklistDuration: Long = 90_000,
+            val certificatePinner: CertificatePinner? = null
     ) {
 
         fun validateConfig() {
