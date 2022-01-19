@@ -120,9 +120,10 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     private fun buildConfig(): HyperTraceSdk.Config {
         userId = generateUserId(21)
         return HyperTraceSdk.Config(
+                debug = true,
                 userId = userId,
                 organization = "ID_HYPERJUMP",
-                baseUrl = "http://20.212.164.71:8080/",
+                baseUrl = "http://108.136.118.250/",
                 bleServiceUuid = "A6BA4286-C550-4794-A888-9467EF0B31A8",
                 bleCharacteristicUuid = "D1034710-B11E-42F2-BCA3-F481177D5BB2",
                 foregroundNotificationCreator = this::createForegroundNotification,

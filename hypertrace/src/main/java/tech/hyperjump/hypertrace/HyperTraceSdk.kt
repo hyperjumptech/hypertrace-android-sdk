@@ -15,6 +15,7 @@ import tech.hyperjump.hypertrace.services.BluetoothMonitoringService
 import tech.hyperjump.hypertrace.streetpass.CentralDevice
 import tech.hyperjump.hypertrace.streetpass.PeripheralDevice
 import tech.hyperjump.hypertrace.streetpass.uploader.TraceUploader
+import java.net.URLEncoder
 import java.util.*
 
 @Keep
@@ -41,7 +42,8 @@ object HyperTraceSdk {
     }
 
     suspend fun uploadEncounterRecords(secret: String, onSuccess: () -> Unit, onError: () -> Unit) {
-        TraceUploader.uploadEncounterRecords(secret, onSuccess, onError)
+        val encodedUriSecret = URLEncoder.encode(secret, "UTF-8")
+        TraceUploader.uploadEncounterRecords(encodedUriSecret, onSuccess, onError)
     }
 
     internal fun thisDeviceMsg(): String {

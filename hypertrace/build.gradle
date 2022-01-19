@@ -17,7 +17,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 31
         versionCode 1
-        versionName "0.9.0"
+        versionName "0.9.0-RC-2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
 
@@ -104,7 +104,7 @@ dependencies {
     implementation "io.ktor:ktor-client-gson:$ktor_version"
     implementation "ch.qos.logback:logback-classic:1.2.10"
     implementation "io.ktor:ktor-client-logging:$ktor_version"
-    implementation "io.ktor:ktor-client-okhttp:$ktor_version"
+    api "io.ktor:ktor-client-okhttp:$ktor_version"
 
     def archLifecycleVersion = "2.2.0"
     // Lifecycle components
