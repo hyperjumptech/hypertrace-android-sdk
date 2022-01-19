@@ -30,7 +30,7 @@ Kotlin OpenTrace implementation based on [BlueTrace specification](https://bluet
 
 ### Installation
 
-1. Download [latest release](./release/hypertrace-release.aar) file.
+1. Download [latest release](./release/latest) file.
 2. Place `hypertrace-release.aar` file into your `app/libs` directory.
 3. In your `app/build.gradle` file, make sure you have the following line:
 
