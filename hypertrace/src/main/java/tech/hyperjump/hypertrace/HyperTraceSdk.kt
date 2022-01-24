@@ -38,13 +38,13 @@ object HyperTraceSdk {
         BluetoothServiceUtil.startBluetoothMonitoringService(appContext)
     }
 
-    suspend fun getHandshakePin(): String? {
+    suspend fun getHandshakePin(): String {
         return TraceUploader.getHandshakePin()
     }
 
-    suspend fun uploadEncounterRecords(secret: String, onSuccess: () -> Unit, onError: () -> Unit) {
+    suspend fun uploadEncounterRecords(secret: String) {
         val encodedUriSecret = URLEncoder.encode(secret, "UTF-8")
-        TraceUploader.uploadEncounterRecords(encodedUriSecret, onSuccess, onError)
+        TraceUploader.uploadEncounterRecords(encodedUriSecret)
     }
 
     internal fun thisDeviceMsg(): String {

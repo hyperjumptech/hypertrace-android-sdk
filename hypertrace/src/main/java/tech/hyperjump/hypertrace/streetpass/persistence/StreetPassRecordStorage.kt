@@ -14,10 +14,6 @@ class StreetPassRecordStorage(val context: Context) {
         recordDao.nukeDb()
     }
 
-    fun getAllRecords(): List<StreetPassRecord> {
-        return recordDao.getCurrentRecords()
-    }
-
     suspend fun purgeOldRecords(before: Long) {
         recordDao.purgeOldRecords(before)
     }

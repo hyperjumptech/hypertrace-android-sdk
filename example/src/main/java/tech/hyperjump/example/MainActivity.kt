@@ -106,11 +106,13 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     private fun uploadContactTrace() {
         lifecycleScope.launchWhenResumed {
             val secret = et_secret.text.toString()
-            HyperTraceSdk.uploadEncounterRecords(
-                    secret,
-                    onSuccess = { toast("Contact trace successfully uploaded") },
-                    onError = { toast("Failed to upload") }
-            )
+            try {
+                HyperTraceSdk.uploadEncounterRecords(secret)
+                toast("Contact trace successfully uploaded")
+            } catch (e: Throwable) {
+                toast("Failed to upload")
+            }
+
         }
     }
 

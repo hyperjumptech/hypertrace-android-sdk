@@ -3,12 +3,8 @@ package tech.hyperjump.hypertrace.streetpass.uploader
 import com.google.gson.annotations.SerializedName
 import io.ktor.client.request.*
 import io.ktor.http.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
 import tech.hyperjump.hypertrace.HyperTraceSdk
 import tech.hyperjump.hypertrace.httpclient.ktorClient
-import tech.hyperjump.hypertrace.logging.CentralLog
 import tech.hyperjump.hypertrace.streetpass.persistence.StreetPassRecordDatabase
 
 internal object TraceUploader {
@@ -18,61 +14,42 @@ internal object TraceUploader {
     private const val SERVICE_UPLOAD_TOKEN = "getUploadToken"
     private const val SERVICE_UPLOAD_RECORDS = "uploadData"
 
-    suspend fun getHandshakePin(): String? {
+    suspend fun getHandshakePin(): String {
         val url = HyperTraceSdk.CONFIG.baseUrl + SERVICE_HANDSHAKE_PIN
-        return try {
-            val result = ktorClient.get<String>(url) {
-                parameter("uid", HyperTraceSdk.CONFIG.userId)
-            }
-            /* return */ JSONObject(result).getString("pin")
-        } catch (t: Throwable) {
-            CentralLog.e(TAG, t.message ?: "")
-            /* return */ null
+        return ktorClient.get(url) {
+            parameter("uid", HyperTraceSdk.CONFIG.userId)
         }
     }
 
-    suspend fun uploadEncounterRecords(secret: String, onSuccess: () -> Unit, onError: () -> Unit) {
+    suspend fun uploadEncounterRecords(secret: String) {
         val uploadToken = getUploadToken(secret)
-                ?: return onError()
-        startStreetPassUpload(uploadToken, onSuccess, onError)
+        startStreetPassUpload(uploadToken)
     }
 
-    private suspend fun getUploadToken(secret: String): String? {
+    private suspend fun getUploadToken(secret: String): String {
         val url = HyperTraceSdk.CONFIG.baseUrl + SERVICE_UPLOAD_TOKEN
-        return try {
-            val result = ktorClient.get<String>(url) {
-                parameter("uid", HyperTraceSdk.CONFIG.userId)
-                parameter("data", secret)
-            }
-            /* return */ JSONObject(result).getString("token")
-        } catch (t: Throwable) {
-            CentralLog.e(TAG, t.message ?: "")
-            /* return */ null
+        return ktorClient.get(url) {
+            parameter("uid", HyperTraceSdk.CONFIG.userId)
+            parameter("data", secret)
         }
     }
 
-    private suspend fun startStreetPassUpload(
-            uploadToken: String,
-            onSuccess: () -> Unit,
-            onError: () -> Unit,
-    ) {
-        val records = withContext(Dispatchers.IO) {
-            StreetPassRecordDatabase.getDatabase(HyperTraceSdk.appContext)
-                    .recordDao()
-                    .getCurrentRecords()
-                    .map { record ->
-                        EncounterPayload(
-                                v = record.v,
-                                msg = record.msg,
-                                modelC = record.modelC,
-                                modelP = record.modelP,
-                                org = record.org,
-                                rssi = record.rssi,
-                                timestamp = record.timestamp / 1000,
-                                txPower = record.txPower,
-                        )
-                    }
-        }
+    private suspend fun startStreetPassUpload(uploadToken: String) {
+        val records = StreetPassRecordDatabase.getDatabase(HyperTraceSdk.appContext)
+                .recordDao()
+                .getCurrentRecords()
+                .map { record ->
+                    EncounterPayload(
+                            v = record.v,
+                            msg = record.msg,
+                            modelC = record.modelC,
+                            modelP = record.modelP,
+                            org = record.org,
+                            rssi = record.rssi,
+                            timestamp = record.timestamp / 1000,
+                            txPower = record.txPower,
+                    )
+                }
 
         val uploadBody = StreetPassUploadBody(
                 uid = HyperTraceSdk.CONFIG.userId,
@@ -81,15 +58,9 @@ internal object TraceUploader {
         )
 
         val url = HyperTraceSdk.CONFIG.baseUrl + SERVICE_UPLOAD_RECORDS
-        try {
-            ktorClient.post<String>(url) {
-                contentType(ContentType.Application.Json)
-                body = uploadBody
-            }
-            onSuccess()
-        } catch (t: Throwable) {
-            CentralLog.e(TAG, t.message ?: "")
-            onError()
+        ktorClient.post<String>(url) {
+            contentType(ContentType.Application.Json)
+            body = uploadBody
         }
     }
 

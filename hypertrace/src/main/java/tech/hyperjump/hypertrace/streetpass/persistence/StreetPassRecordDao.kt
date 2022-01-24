@@ -14,7 +14,7 @@ interface StreetPassRecordDao {
     fun getMostRecentRecord(): LiveData<StreetPassRecord?>
 
     @Query("SELECT * from record_table ORDER BY timestamp ASC")
-    fun getCurrentRecords(): List<StreetPassRecord>
+    suspend fun getCurrentRecords(): List<StreetPassRecord>
 
     @Query("DELETE FROM record_table")
     fun nukeDb()
