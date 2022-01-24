@@ -81,7 +81,9 @@ HypertraceSdk.startService(config)
 #### Get handshake PIN
 
 `getHandshakePin` will fetch a PIN from server for identification from authority.
+
 **Return**: String, handshake PIN.
+
 **Throw**: Exception on failures.
 
 ```kotlin
@@ -91,8 +93,11 @@ HypertraceSdk.getHandshakePin()
 #### Upload contact encounter
 
 `uploadEncounterRecords` will upload recorded BLE encounters in local to server.
+
 **Return**: Unit / void.
+
 **Throw**: Exception on failures.
+
 Params:
 
 - secret: temporary password provided by authority.
