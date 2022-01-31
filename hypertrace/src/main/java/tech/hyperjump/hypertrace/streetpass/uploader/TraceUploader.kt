@@ -3,6 +3,7 @@ package tech.hyperjump.hypertrace.streetpass.uploader
 import com.google.gson.annotations.SerializedName
 import io.ktor.client.request.*
 import io.ktor.http.*
+import org.json.JSONObject
 import tech.hyperjump.hypertrace.HyperTraceSdk
 import tech.hyperjump.hypertrace.httpclient.ktorClient
 import tech.hyperjump.hypertrace.streetpass.persistence.StreetPassRecordDatabase
@@ -17,6 +18,7 @@ internal object TraceUploader {
     suspend fun getHandshakePin(): String {
         val url = HyperTraceSdk.CONFIG.baseUrl + SERVICE_HANDSHAKE_PIN
         return ktorClient.get(url) {
+            contentType(ContentType.Application.Json)
             parameter("uid", HyperTraceSdk.CONFIG.userId)
         }
     }
@@ -28,10 +30,12 @@ internal object TraceUploader {
 
     private suspend fun getUploadToken(secret: String): String {
         val url = HyperTraceSdk.CONFIG.baseUrl + SERVICE_UPLOAD_TOKEN
-        return ktorClient.get(url) {
+        val result = ktorClient.get<String>(url) {
+            contentType(ContentType.Application.Json)
             parameter("uid", HyperTraceSdk.CONFIG.userId)
-            parameter("data", secret)
+            parameter("secret", secret)
         }
+        return JSONObject(result).getString("token")
     }
 
     private suspend fun startStreetPassUpload(uploadToken: String) {
