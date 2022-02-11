@@ -1,6 +1,7 @@
 package tech.hyperjump.example
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.bluetooth.BluetoothManager
 import android.content.ClipData
@@ -16,7 +17,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.activity_main.*
-import okhttp3.*
 import pub.devrel.easypermissions.EasyPermissions
 import tech.hyperjump.hypertrace.HyperTraceSdk
 import tech.hyperjump.hypertrace.scandebug.ScanDebugActivity
@@ -32,7 +32,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        if (requestBluetooth()) setupOpenTrace()
         button_scan.setOnClickListener {
             startActivity(Intent(this, ScanDebugActivity::class.java))
         }
@@ -47,8 +46,11 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
             clipboardService.setPrimaryClip(clip)
             toast("UID Copied: $userId")
         }
+        button_start_service.setOnClickListener { if (requestBluetooth()) setupOpenTrace() }
+        button_stop_service.setOnClickListener { HyperTraceSdk.stopService() }
     }
 
+    @SuppressLint("MissingPermission")
     private fun requestBluetooth(): Boolean {
         val permissions = EasyPermissions.hasPermissions(
                 applicationContext,
@@ -91,15 +93,9 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
             progress_bar.visibility = View.VISIBLE
             button_handshake_pin.visibility = View.GONE
             val pin = HyperTraceSdk.getHandshakePin()
-            if (pin != null) {
-                tv_pin.text = pin
-                tv_pin.visibility = View.VISIBLE
-                progress_bar.visibility = View.GONE
-            } else {
-                toast("Failed to get PIN")
-                progress_bar.visibility = View.GONE
-                button_handshake_pin.visibility = View.VISIBLE
-            }
+            tv_pin.text = pin
+            tv_pin.visibility = View.VISIBLE
+            progress_bar.visibility = View.GONE
         }
     }
 

@@ -38,6 +38,10 @@ object HyperTraceSdk {
         BluetoothServiceUtil.startBluetoothMonitoringService(appContext)
     }
 
+    fun stopService() {
+        BluetoothServiceUtil.stopBluetoothMonitoringService(appContext)
+    }
+
     suspend fun getHandshakePin(): String {
         return TraceUploader.getHandshakePin()
     }
