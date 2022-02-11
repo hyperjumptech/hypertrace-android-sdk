@@ -9,6 +9,7 @@ Kotlin OpenTrace implementation based on [BlueTrace specification](https://bluet
 - [How to use](#how-to-use)
   - [Start background service](#start-background-service)
     - [Available configuration](#available-configuration)
+  - [Stop background service](#stop-background-service)
   - [Get handshake PIN](#get-handshake-pin)
   - [Upload contact encounter](#upload-contact-encounter)
 - [Debugging](#debugging)
@@ -77,6 +78,14 @@ HypertraceSdk.startService(config)
 | bluetoothServiceHeartBeat          | long                 | Interval between OpenTrace bluetooth service check **miliseconds.** Default to 15 minutes.                                      | **NO**    | 900_000       |
 | certificatePinner                  | CertificatePinner    | Helper for certificate pinning provided by OkHttp. See [**Security Enhancements.**](#security-enhancements)                     | **NO**    | null          |
 | okHttpConfig                       | OkHttpClient.Builder | For a complete control of SDK's OkHttpClient.                                                                                   | **NO**    | null          |
+
+#### Stop background service
+
+`stopService` will stop Hypertrace background service.
+
+```kotlin
+HypertraceSdk.stopService()
+```
 
 #### Get handshake PIN
 
