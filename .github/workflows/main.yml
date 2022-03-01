@@ -19,10 +19,10 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: 11
-          distribution: 'zulu'
+          distribution: "zulu"
 
       - name: Build project
-        run: ./gradlew build --stacktrace
+        run: ./gradlew buildDebug --stacktrace
 
       - name: Assemble Test APK
         run: ./gradlew hypertrace:assembleAndroidTest --stacktrace
