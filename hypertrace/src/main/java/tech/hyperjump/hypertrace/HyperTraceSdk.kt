@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.os.Build
 import androidx.annotation.Keep
+import androidx.annotation.VisibleForTesting
 import androidx.core.app.NotificationChannelCompat
 import okhttp3.CertificatePinner
 import okhttp3.OkHttpClient
@@ -31,6 +32,11 @@ object HyperTraceSdk {
 
     private const val TAG = "HyperTraceSDK"
 
+    @VisibleForTesting
+    fun setConfig(config: Config) {
+        CONFIG = config
+    }
+
     fun startService(config: Config) {
         validatePermissions()
         checkBleSupport()
@@ -52,10 +58,16 @@ object HyperTraceSdk {
         TraceUploader.uploadEncounterRecords(encodedUriSecret)
     }
 
-    suspend fun countEncounter(): Int {
+    suspend fun countEncounters(before: Long = CONFIG.recordTTL): Int {
         return StreetPassRecordDatabase.getDatabase(appContext)
                 .recordDao()
-                .getCurrentRecords().size
+                .countRecords(before)
+    }
+
+    suspend fun removeEncounters(before: Long = CONFIG.recordTTL) {
+        return StreetPassRecordDatabase.getDatabase(appContext)
+                .recordDao()
+                .purgeOldRecords(before)
     }
 
     internal fun thisDeviceMsg(): String {

@@ -1,7 +1,9 @@
 package tech.hyperjump.hypertrace
 
+import android.app.Notification
 import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.core.app.NotificationChannelCompat
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -12,6 +14,7 @@ import org.junit.*
 import org.junit.runner.RunWith
 import tech.hyperjump.hypertrace.streetpass.persistence.StreetPassRecord
 import tech.hyperjump.hypertrace.streetpass.persistence.StreetPassRecordDatabase
+import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 @ExperimentalCoroutinesApi
@@ -30,6 +33,19 @@ class HypertraceTest {
     fun setup() {
         context = ApplicationProvider.getApplicationContext()
         db = StreetPassRecordDatabase.getDatabase(context)
+        val config = HyperTraceSdk.Config(
+                notificationChannelCreator = {
+                    NotificationChannelCompat.Builder("", 0).build()
+                },
+                foregroundNotificationCreator = { Notification() },
+                bluetoothFailedNotificationCreator = { Notification() },
+                baseUrl = "",
+                bleServiceUuid = UUID.randomUUID().toString(),
+                bleCharacteristicUuid = UUID.randomUUID().toString(),
+                organization = "TEST",
+                userId = ""
+        )
+        HyperTraceSdk.setConfig(config)
         StreetPassRecordDatabase.TEST = true
     }
 
@@ -39,47 +55,73 @@ class HypertraceTest {
     }
 
     @Test
-    fun testWrite() {
+    fun testCount() {
         testScope.runBlockingTest {
-            db.recordDao().insert(StreetPassRecord("Test"))
-        }
+            //given
+            val freshEncounter = StreetPassRecord("Test")
+            db.recordDao().insert(freshEncounter)
+            val freshEncounter2 = StreetPassRecord("Test2")
+            db.recordDao().insert(freshEncounter2)
+            val oldEncounter = StreetPassRecord("Test3")
 
-        testScope.runBlockingTest {
-            val recordCount = HyperTraceSdk.countEncounter()
-            Assert.assertEquals(1, recordCount)
+            // backwards timestamp to configured recordTTL + 1s
+            val backwardTime = HyperTraceSdk.CONFIG.recordTTL.minus(1_000L)
+            oldEncounter.timestamp = backwardTime
+            db.recordDao().insert(oldEncounter)
+
+            // when count encounter before configured recordTTL
+            val encounterCountSevenDaysAgo = HyperTraceSdk.countEncounters()
+
+            // when count total encounter before now
+            val totalEncounter = HyperTraceSdk.countEncounters(before = System.currentTimeMillis())
+
+            // verify
+            Assert.assertEquals(1, encounterCountSevenDaysAgo)
+            Assert.assertEquals(3, totalEncounter)
         }
     }
 
     @Test
-    fun testWriteDouble() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val db = StreetPassRecordDatabase.getDatabase(context)
+    fun testDelete_DefaultRecordTTL() {
         testScope.runBlockingTest {
+            // given
             db.recordDao().insert(StreetPassRecord("Test"))
-            db.recordDao().insert(StreetPassRecord("Test2"))
-        }
+            val recordCount = HyperTraceSdk.countEncounters(before = System.currentTimeMillis())
+            Assert.assertEquals(1, recordCount)
 
-        testScope.runBlockingTest {
-            val recordCount = HyperTraceSdk.countEncounter()
-            Assert.assertEquals(2, recordCount)
+            // when remove encounters older than config recordTTL
+            // default parameter
+            HyperTraceSdk.removeEncounters()
+
+            // verify
+            val afterRemove = HyperTraceSdk.countEncounters(before = System.currentTimeMillis())
+            Assert.assertEquals(1, afterRemove)
         }
     }
 
     @Test
-    fun testDelete() {
+    fun testDelete_Parameterized() {
         testScope.runBlockingTest {
-            db.recordDao().insert(StreetPassRecord("Test"))
-        }
+            // given
+            val freshEncounter = StreetPassRecord("Test")
+            db.recordDao().insert(freshEncounter)
+            val oldEncounter = StreetPassRecord("Test2")
 
-        testScope.runBlockingTest {
-            val recordCount = HyperTraceSdk.countEncounter()
-            Assert.assertEquals(1, recordCount)
-        }
+            // backwards timestamp to configured recordTTL + 1s
+            val backwardTime = HyperTraceSdk.CONFIG.recordTTL.minus(1_000L)
+            oldEncounter.timestamp = backwardTime
+            db.recordDao().insert(oldEncounter)
 
-        db.recordDao().nukeDb()
-        testScope.runBlockingTest {
-            val recordCount = HyperTraceSdk.countEncounter()
-            Assert.assertEquals(0, recordCount)
+            val encounterBeforeDelete = HyperTraceSdk.countEncounters(before = System.currentTimeMillis())
+
+            // when delete encounter before now
+            // non default parameter
+            HyperTraceSdk.removeEncounters(before = System.currentTimeMillis())
+            val encounterAfterDelete = HyperTraceSdk.countEncounters(before = System.currentTimeMillis())
+
+            // verify
+            Assert.assertEquals(2, encounterBeforeDelete)
+            Assert.assertEquals(0, encounterAfterDelete)
         }
     }
 }

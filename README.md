@@ -115,6 +115,19 @@ Params:
 HypertraceSdk.uploadEncounterRecords(secret, onSuccess = {}, onError = {})
 ```
 
+#### Count encounter
+
+`countEncounters` will return encounter record count. By default, this method only count the expired records, respective to **recordTTL**. See [configuration](#available-configuration).
+**Param**: `before`, timestamp in millis.
+**Return**: Record count before given timestamp, **recordTTL** by default.
+
+#### Remove encounter
+
+`removeEncounters` will delete encounter records. By default, this method only delete expired records, respective to **recordTTL**. See [configuration](#available-configuration).
+
+**Param**: `before`, timestamp in millis.
+**Return**: Unit / void.
+
 ### Debugging
 
 Hypertrace SDK provides the following classes for debugging purposes:
