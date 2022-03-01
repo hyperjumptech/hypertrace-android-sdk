@@ -30,5 +30,5 @@ jobs:
       - name: Instrumented test
         uses: reactivecircus/android-emulator-runner@v2.23.0
         with:
-          api-level: 16
+          api-level: 23
           script: ./gradlew hypertrace:connectedAndroidTest --stacktrace
