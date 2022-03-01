@@ -1,0 +1,30 @@
+name: Main
+on:
+  pull_request
+  push:
+    branches: [ main ]
+
+jobs:
+  checks:
+    runs-on: macos-latest
+    steps:
+      - name: Project checkout
+        uses: actions/checkout@v2
+
+      - name: Setup JDK 1.8
+        uses: actions/setup-java@v2
+        with:
+          java-version: 8
+          distribution: 'zulu'
+
+      - name: Build project
+        run: ./gradlew build --stacktrace
+
+      - name: Assemble Test APK
+        run: ./gradlew assembleAndroidTest --stacktrace
+
+      - name: Instrumented test
+        uses: reactivecircus/android-emulator-runner@v2.23.0
+        with:
+          api-level: 16
+          script: ./gradlew hypertrace:connectedAndroidTest --stacktrace
