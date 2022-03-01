@@ -4,6 +4,9 @@ on:
     branches: [ main ]
   push:
     branches: [ main ]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   checks:
@@ -12,17 +15,17 @@ jobs:
       - name: Project checkout
         uses: actions/checkout@v2
 
-      - name: Setup JDK 1.8
+      - name: Setup JDK 1.11
         uses: actions/setup-java@v2
         with:
-          java-version: 8
+          java-version: 11
           distribution: 'zulu'
 
       - name: Build project
         run: ./gradlew build --stacktrace
 
       - name: Assemble Test APK
-        run: ./gradlew assembleAndroidTest --stacktrace
+        run: ./gradlew hypertrace:assembleAndroidTest --stacktrace
 
       - name: Instrumented test
         uses: reactivecircus/android-emulator-runner@v2.23.0
