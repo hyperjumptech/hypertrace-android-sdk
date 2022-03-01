@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.os.Build
 import androidx.annotation.Keep
+import androidx.annotation.VisibleForTesting
 import androidx.core.app.NotificationChannelCompat
 import okhttp3.CertificatePinner
 import okhttp3.OkHttpClient
@@ -15,6 +16,7 @@ import tech.hyperjump.hypertrace.logging.CentralLog
 import tech.hyperjump.hypertrace.services.BluetoothMonitoringService
 import tech.hyperjump.hypertrace.streetpass.CentralDevice
 import tech.hyperjump.hypertrace.streetpass.PeripheralDevice
+import tech.hyperjump.hypertrace.streetpass.persistence.StreetPassRecordDatabase
 import tech.hyperjump.hypertrace.streetpass.uploader.TraceUploader
 import java.net.URLEncoder
 import java.util.*
@@ -29,6 +31,11 @@ object HyperTraceSdk {
         private set
 
     private const val TAG = "HyperTraceSDK"
+
+    @VisibleForTesting
+    fun setConfig(config: Config) {
+        CONFIG = config
+    }
 
     fun startService(config: Config) {
         validatePermissions()
@@ -49,6 +56,18 @@ object HyperTraceSdk {
     suspend fun uploadEncounterRecords(secret: String) {
         val encodedUriSecret = URLEncoder.encode(secret, "UTF-8")
         TraceUploader.uploadEncounterRecords(encodedUriSecret)
+    }
+
+    suspend fun countEncounters(before: Long = CONFIG.recordTTL): Int {
+        return StreetPassRecordDatabase.getDatabase(appContext)
+                .recordDao()
+                .countRecords(before)
+    }
+
+    suspend fun removeEncounters(before: Long = CONFIG.recordTTL) {
+        return StreetPassRecordDatabase.getDatabase(appContext)
+                .recordDao()
+                .purgeOldRecords(before)
     }
 
     internal fun thisDeviceMsg(): String {

@@ -1,6 +1,7 @@
 package tech.hyperjump.hypertrace.streetpass.persistence
 
 import android.content.Context
+import androidx.annotation.VisibleForTesting
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -9,9 +10,9 @@ import tech.hyperjump.hypertrace.status.persistence.StatusRecordDao
 
 
 @Database(
-    entities = arrayOf(StreetPassRecord::class, StatusRecord::class),
-    version = 1,
-    exportSchema = true
+        entities = arrayOf(StreetPassRecord::class, StatusRecord::class),
+        version = 1,
+        exportSchema = true
 )
 abstract class StreetPassRecordDatabase : RoomDatabase() {
 
@@ -24,17 +25,25 @@ abstract class StreetPassRecordDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: StreetPassRecordDatabase? = null
 
+        @VisibleForTesting
+        internal var TEST = false
+
         internal fun getDatabase(context: Context): StreetPassRecordDatabase {
             val tempInstance = INSTANCE
             if (tempInstance != null) {
                 return tempInstance
             }
             synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context,
-                    StreetPassRecordDatabase::class.java,
-                    "record_database"
-                ).build()
+                val instance = if (TEST) {
+                    Room.inMemoryDatabaseBuilder(context, StreetPassRecordDatabase::class.java)
+                            .build()
+                } else {
+                    Room.databaseBuilder(
+                            context,
+                            StreetPassRecordDatabase::class.java,
+                            "record_database"
+                    ).build()
+                }
                 INSTANCE = instance
                 return instance
             }
