@@ -113,6 +113,8 @@ internal object TempIDManager {
             val jsonObject = JSONObject(responseJson)
             val tempIdsJson = jsonObject.getJSONArray("tempIDs")
             storeTemporaryIDs(context, tempIdsJson.toString())
+            val refreshTime = jsonObject.getLong("refreshTime")
+            Preference.putNextFetchTimeInMillis(context, refreshTime * 1000)
         } catch (t: Throwable) {
             CentralLog.e(TAG, t.message ?: "")
         }
