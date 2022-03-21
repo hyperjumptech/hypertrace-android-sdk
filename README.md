@@ -1,146 +1,181 @@
-# OpenTrace Android app
+# Android Hypertrace - Kotlin implementation of OpenTrace by Hyperjump
 
-![alt text](./OpenTrace.png "OpenTrace Logo")
+Kotlin OpenTrace implementation based on [BlueTrace specification](https://bluetrace.io/static/bluetrace_whitepaper-938063656596c104632def383eb33b3c.pdf). 
 
-OpenTrace is the open source reference implementation of BlueTrace.
-BlueTrace is a privacy-preserving protocol for community-driven contact tracing across borders. It allows participating devices to log Bluetooth encounters with each other, in order to facilitate epidemiological contact tracing while protecting users’ personal data and privacy. Visit https://bluetrace.io to learn more.
-The OpenTrace reference implementation comprises:
-- Android app: [opentrace-community/opentrace-android](https://github.com/opentrace-community/opentrace-android)
-- iOS app: [opentrace-community/opentrace-ios](https://github.com/opentrace-community/opentrace-ios)
-- Cloud functions: [opentrace-community/opentrace-cloud-functions](https://github.com/opentrace-community/opentrace-cloud-functions)
-- Calibration: [opentrace-community/opentrace-calibration](https://github.com/opentrace-community/opentrace-calibration)
+### Table of Content
 
-## Setup of the app
-To get started on the app, setup and configure the following:
-1. ./gradle.properties
-2. ./app/build.gradle
-3. Firebase - google-services.json
-4. Remote configs
-5. Protocol version
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [How to use](#how-to-use)
+  - [Start background service](#start-background-service)
+    - [Available configuration](#available-configuration)
+  - [Stop background service](#stop-background-service)
+  - [Get handshake PIN](#get-handshake-pin)
+  - [Upload contact encounter](#upload-contact-encounter)
+- [Debugging](#debugging)
+- [Troubleshooting](#troubleshooting)
+- [Protocol version](#protocol-version)
+- [Security enhancement](#security-enhancements)
+- [Statement from Google](#statement-from-google)
+- [Changelog](#changelog)
 
----
+### Requirements
 
-### Configs in gradle.properties
+- Android API level 23+ (Android M)
+- Kotlin 1.5.31
+- A device with Bluetooth Low Energy (BLE) support.
+- This SDK requires the application be granted following permissions:
+  - `android.permission.ACCESS_FINE_LOCATION`
+  - `android.permission.ACCESS_COARSE_LOCATION`
+  - `android.permission.BLUETOOTH`
+- A running implementation of [Hypertrace server](https://github.com/hyperjumptech/hypertrace).
 
-Sample Configuration
+### Installation
+
+1. Add jitpack repository to your project's `build.gradle` file
+
 ```
-ORG="SG_OTC"
-STORE_URL="<Play store URL>"
-PRIVACY_URL="<Privacy policy URL>"
-
-SERVICE_FOREGROUND_NOTIFICATION_ID=771579
-SERVICE_FOREGROUND_CHANNEL_ID="OpenTrace Updates"
-SERVICE_FOREGROUND_CHANNEL_NAME="OpenTrace Foreground Service"
-
-PUSH_NOTIFICATION_ID=771578
-PUSH_NOTIFICATION_CHANNEL_NAME="OpenTrace Notifications"
-
-#service configurations
-SCAN_DURATION=8000
-MIN_SCAN_INTERVAL=36000
-MAX_SCAN_INTERVAL=43000
-
-ADVERTISING_DURATION=180000
-ADVERTISING_INTERVAL=5000
-
-PURGE_INTERVAL=86400000
-PURGE_TTL=1814400000
-MAX_QUEUE_TIME=7000
-BM_CHECK_INTERVAL=540000
-HEALTH_CHECK_INTERVAL=900000
-CONNECTION_TIMEOUT=6000
-BLACKLIST_DURATION=100000
-
-FIREBASE_REGION = "<Your Firebase region>"
-
-STAGING_FIREBASE_UPLOAD_BUCKET = "opentrace-app-staging"
-STAGING_SERVICE_UUID = "17E033D3-490E-4BC9-9FE8-2F567643F4D3"
-
-V2_CHARACTERISTIC_ID = "117BDD58-57CE-4E7A-8E87-7CCCDDA2A804"
-
-PRODUCTION_FIREBASE_UPLOAD_BUCKET = "opentrace-app"
-PRODUCTION_SERVICE_UUID = "B82AB3FC-1595-4F6A-80F0-FE094CC218F9"
-
-android.useAndroidX=true
-android.enableJetifier=true
+allprojects {
+    repositories {
+        maven { url "https://jitpack.io" }
+    }
+}
 ```
 
-> ORG: For international federation usage
+2. Add Hypertrace to your dependencies, change `x.y.z` below to version in the [release page](https://github.com/hyperjumptech/hypertrace-android-sdk/releases).
 
-> To obtain the official BlueTrace Service ID and Characteristic ID, please email [info@bluetrace.io](mailto:info@bluetrace.io)
-
----
-
-### Build Configurations in build.gradle
-Change the package name and other configurations accordingly such as the `resValue` in  in the different settings in `buildTypes`
-For example,
-```groovy
-buildTypes {
-    debug {
-            buildConfigField "String", "FIREBASE_UPLOAD_BUCKET", STAGING_FIREBASE_UPLOAD_BUCKET
-            buildConfigField "String", "BLE_SSID", STAGING_SERVICE_UUID
-
-            String ssid = STAGING_SERVICE_UUID
-            versionNameSuffix "-debug-${getGitHash()}-${ssid.substring(ssid.length() - 5,ssid.length() - 1 )}"
-            resValue "string", "app_name", "OpenTrace Debug"
-            applicationIdSuffix "stg"
-        }
+```
+dependencies {
+  implementation 'com.github.hyperjumptech:hypertrace-android-sdk:x.y.z'
+}
 ```
 
-> Values such as STAGING_FIREBASE_UPLOAD_BUCKET, STAGING_SERVICE_UUID have been defined in gradle.properties as described above.
+### How to use
 
----
+#### Start background service
 
-### Firebase and google-services.json
-Setup Firebase for the different environment.
-Download the google-services.json for each of the environments and put it in the corresponding folder.
+```kotlin
+val config = HypertraceSdk.Config()
+HypertraceSdk.startService(config)
+```
 
-Debug: ./app/src/debug/google-services.json
+##### Available configuration
 
-Production: ./app/src/release/google-services.json
+| Field                              | Type                 | Description                                                                                                                     | Mandatory | Default       |
+| :--------------------------------- | :------------------- | :------------------------------------------------------------------------------------------------------------------------------ | :-------- | :------------ |
+| notificationChannelCreator         | Function             | Kotlin higher-order function for SDK to create android notification channel. (Required for API level 26 / Android O).           | **YES**   | -             |
+| foregroundNotificationCreator      | Function             | Kotlin higher-order function for SDK to create notification when service is actively running.                                   | **YES**   | -             |
+| bluetoothFailedNotificationCreator | Function             | Kotlin higher-order function for SDK to create notification when service fails to access bluetooth and location permissions.    | **YES**   | -             |
+| userId                             | string               | Main application's user ID. **Must be** 21 characters.                                                                          | **YES**   | -             |
+| organization                       | string               | Application's organization name. Typically, this is a combination of `COUNTRY_CODE` and short organization name.                | **YES**   | -             |
+| baseUrl                            | string               | URL for [Hypertrace server](https://github.com/hyperjumptech/hypertrace) implementation. **Must end** with slash `/` character. | **YES**   | -             |
+| bleServiceUuid                     | string               | BLE service UUID. **Must be** a valid UUID.                                                                                     | **YES**   | -             |
+| bleCharacteristicUuid              | string               | BLE characteristic UUID. **Must be** a valid UUID.                                                                              | **YES**   | -             |
+| debug                              | boolean              | Enable showing street pass list and bluetooth scanning activity                                                                 | **NO**    | -             |
+| keepAliveService                   | boolean              | If `true`, Hypertrace will try to restart service everytime it is killed.                                                       | **NO**    | `false`       |
+| scanDuration                       | long                 | Duration of each bluetooth scan action in **miliseconds.** Default to 10 seconds.                                               | **NO**    | 10_000        |
+| minScanInterval                    | long                 | Minimum scan interval in **miliseconds.** Randomized between minScanInterval and maxScanInterval. Default to 30 seconds.        | **NO**    | 30_000        |
+| maxScanInterval                    | long                 | Maximum scan interval in **miliseconds.** Randomized between minScanInterval and maxScanInterval. Default to 40 seconds.        | **NO**    | 40_000        |
+| advertisingDuration                | long                 | Duration of each bluetooth advertising action in **miliseconds.** Default to 30 minutes.                                        | **NO**    | 180_000       |
+| advertisingInterval                | long                 | Interval between bluetooth advertising action in **miliseconds.** Default to 6 seconds.                                         | **NO**    | 6_000         |
+| purgeRecordInterval                | long                 | Interval between purge action of encounter's records in **miliseconds.** Default to 24 hours.                                   | **NO**    | 86_400_000    |
+| recordTTL                          | long                 | The lifetime of encounter's records in **miliseconds.** Default to 21 days.                                                     | **NO**    | 1_814_400_000 |
+| maxPeripheralQueueTime             | long                 | Maximum time of a peripheral to wait to be processed in **miliseconds.** Default to 10 seconds.                                 | **NO**    | 10_000        |
+| deviceConnectionTimeout            | long                 | Maximum time of a peripheral read-write action in **miliseconds.** Default to 6 seconds.                                        | **NO**    | 6_000         |
+| deviceBlacklistDuration            | long                 | Maximum time of a device to be blacklisted time in **miliseconds.** Default to 1.5 minutes.                                     | **NO**    | 90_000        |
+| temporaryIdCheckInterval           | long                 | Interval between temporary IDs' supply check **miliseconds.** Default to 10 minutes.                                            | **NO**    | 600_000       |
+| bluetoothServiceHeartBeat          | long                 | Interval between OpenTrace bluetooth service check **miliseconds.** Default to 15 minutes.                                      | **NO**    | 900_000       |
+| certificatePinner                  | CertificatePinner    | Helper for certificate pinning provided by OkHttp. See [**Security Enhancements.**](#security-enhancements)                     | **NO**    | null          |
+| okHttpConfig                       | OkHttpClient.Builder | For a complete control of SDK's OkHttpClient.                                                                                   | **NO**    | null          |
 
-The app currently relies on Firebase Functions to work. More information can be obtained by referring to [opentrace-cloud-functions](https://github.com/opentrace-community/opentrace-cloud-functions).
+#### Compatibility with Hypertrace iOS SDK
+For compatibility with [Hypertrace iOS SDK](https://github.com/hyperjump/hypertrace-ios-sdk), `bleServiceUuid` and `bleCharacteristicUuid` must be identical to the corresponding iOS configuration.
 
----
+#### Stop background service
 
-### Remote Config
-Remote config is used for retrieving the "Share" message used in the app.
-The key for it is "ShareText". If it is unable to be retrieved, it falls back to R.string.share_message
+`stopService` will stop Hypertrace background service.
 
----
+```kotlin
+HypertraceSdk.stopService()
+```
+
+#### Get handshake PIN
+
+`getHandshakePin` will fetch a PIN from server for identification from authority.
+
+**Return**: String, handshake PIN.
+
+**Throw**: Exception on failures.
+
+```kotlin
+HypertraceSdk.getHandshakePin()
+```
+
+#### Upload contact encounter
+
+`uploadEncounterRecords` will upload recorded BLE encounters in local to server.
+
+**Return**: Unit / void.
+
+**Throw**: Exception on failures.
+
+Params:
+
+- secret: temporary password provided by authority.
+
+```kotlin
+HypertraceSdk.uploadEncounterRecords(secret, onSuccess = {}, onError = {})
+```
+
+#### Count encounter
+
+`countEncounters` will return encounter record count. By default, this method only count the expired records, respective to **recordTTL**. See [configuration](#available-configuration).
+**Param**: `before`, timestamp in millis.
+**Return**: Record count before given timestamp, **recordTTL** by default.
+
+#### Remove encounter
+
+`removeEncounters` will delete encounter records. By default, this method only delete expired records, respective to **recordTTL**. See [configuration](#available-configuration).
+
+**Param**: `before`, timestamp in millis.
+**Return**: Unit / void.
+
+### Debugging
+
+Hypertrace SDK provides the following classes for debugging purposes:
+
+- `tech.hyperjump.hypertrace.scandebug.ScanDebugActivity` for bluetooth scanning status.
+- `tech.hyperjump.hypertrace.scandebug.StreetPassDebugActivity` for contact tracing records in local.
+
+### Troubleshooting
+
+- Foreground service get killed when app is paused on device model XXX.
+
+  For non-AOSP users, you need to whitelist the application from OS' power manager. For further information, please refer to [Don't Kill My App](https://dontkillmyapp.com/) website.
 
 ### Protocol Version
+
 Protocol version used should be 2 (or above)
 Version 1 of the protocol has been deprecated
 
 ---
 
 ### Security Enhancements
-SSL pinning is not included as part of the repo.
-It is recommended to add in a check for SSL certificate returned by the backend.
+
+Hypertrace uses [OkHttp v4.x](https://square.github.io/okhttp/) under the hood. We provide configurable certificate pinner, for implementation, refer to [CertificatePinner documentation.](https://square.github.io/okhttp/4.x/okhttp/okhttp3/-certificate-pinner/)
 
 ---
 
 ### Statement from Google
+
 The following is a statement from Google:
 "At Google Play we take our responsibility to provide accurate and relevant information for our users very seriously. For that reason, we are currently only approving apps that reference COVID-19 or related terms in their store listing if the app is published, commissioned, or authorized by an official government entity or public health organization, and the app does not contain any monetization mechanisms such as ads, in-app products, or in-app donations. This includes references in places such as the app title, description, release notes, or screenshots.
 For more information visit [https://android-developers.googleblog.com/2020/04/google-play-updates-and-information.html](https://android-developers.googleblog.com/2020/04/google-play-updates-and-information.html)"
 
 ---
 
-### Acknowledgements
-OpenTrace uses the following [third party libraries / tools](./ATTRIBUTION.md).
-
----
-
 ### ChangeLog
 
-1.0.2
-*   Fixed an issue in GattServer.kt where the cached readPayLoad is not cleared properly in some cases
-*   Removed Firebase Analytics
+**0.9.0**
 
-1.0.1
-*   Updated readme.md to add in two more fields for setup
-
-1.0.0
-*   First release of this repo
+- First release.
