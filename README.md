@@ -9,6 +9,7 @@ Kotlin OpenTrace implementation based on [BlueTrace specification](https://bluet
 - [How to use](#how-to-use)
   - [Start background service](#start-background-service)
     - [Available configuration](#available-configuration)
+  - [Compatibility with Hypertrace iOS SDK](#compatibility-with-hypertrace-ios-sdk)
   - [Stop background service](#stop-background-service)
   - [Get handshake PIN](#get-handshake-pin)
   - [Upload contact encounter](#upload-contact-encounter)
