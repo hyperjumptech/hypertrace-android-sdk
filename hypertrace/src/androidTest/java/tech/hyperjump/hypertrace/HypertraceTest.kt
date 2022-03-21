@@ -6,14 +6,14 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.core.app.NotificationChannelCompat
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import io.bluetrace.opentrace.streetpass.persistence.StreetPassRecord
+import io.bluetrace.opentrace.streetpass.persistence.StreetPassRecordDatabase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.*
 import org.junit.runner.RunWith
-import tech.hyperjump.hypertrace.streetpass.persistence.StreetPassRecord
-import tech.hyperjump.hypertrace.streetpass.persistence.StreetPassRecordDatabase
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 
