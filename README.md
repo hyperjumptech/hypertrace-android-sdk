@@ -1,18 +1,14 @@
 # Android Hypertrace - Kotlin implementation of OpenTrace by Hyperjump
 
-Kotlin OpenTrace implementation based on [BlueTrace specification](https://bluetrace.io/static/bluetrace_whitepaper-938063656596c104632def383eb33b3c.pdf). 
+Kotlin OpenTrace implementation based on [BlueTrace specification](https://bluetrace.io/static/bluetrace_whitepaper-938063656596c104632def383eb33b3c.pdf).
 
 ### Table of Content
 
 - [Requirements](#requirements)
 - [Installation](#installation)
+- [Run the tests](#run-the-tests)
 - [How to use](#how-to-use)
-  - [Start background service](#start-background-service)
-    - [Available configuration](#available-configuration)
-  - [Compatibility with Hypertrace iOS SDK](#compatibility-with-hypertrace-ios-sdk)
-  - [Stop background service](#stop-background-service)
-  - [Get handshake PIN](#get-handshake-pin)
-  - [Upload contact encounter](#upload-contact-encounter)
+- [Compatibility with Hypertrace iOS SDK](#compatibility-with-hypertrace-ios-sdk)
 - [Debugging](#debugging)
 - [Troubleshooting](#troubleshooting)
 - [Protocol version](#protocol-version)
@@ -49,6 +45,14 @@ allprojects {
 dependencies {
   implementation 'com.github.hyperjumptech:hypertrace-android-sdk:x.y.z'
 }
+```
+
+### Running tests
+
+The current state of the project only has instrumented tests. To run it, you need a connected android emulator or device and run the command below.
+
+```
+./gradlew hypertrace:connectedDebugAndroidTest --stacktrace
 ```
 
 ### How to use
@@ -88,9 +92,6 @@ HypertraceSdk.startService(config)
 | bluetoothServiceHeartBeat          | long                 | Interval between OpenTrace bluetooth service check **miliseconds.** Default to 15 minutes.                                      | **NO**    | 900_000       |
 | certificatePinner                  | CertificatePinner    | Helper for certificate pinning provided by OkHttp. See [**Security Enhancements.**](#security-enhancements)                     | **NO**    | null          |
 | okHttpConfig                       | OkHttpClient.Builder | For a complete control of SDK's OkHttpClient.                                                                                   | **NO**    | null          |
-
-#### Compatibility with Hypertrace iOS SDK
-For compatibility with [Hypertrace iOS SDK](https://github.com/hyperjump/hypertrace-ios-sdk), `bleServiceUuid` and `bleCharacteristicUuid` must be identical to the corresponding iOS configuration.
 
 #### Stop background service
 
@@ -141,6 +142,10 @@ HypertraceSdk.uploadEncounterRecords(secret, onSuccess = {}, onError = {})
 **Param**: `before`, timestamp in millis.
 **Return**: Unit / void.
 
+### Compatibility with Hypertrace iOS SDK
+
+For compatibility with [Hypertrace iOS SDK](https://github.com/hyperjump/hypertrace-ios-sdk), `bleServiceUuid` and `bleCharacteristicUuid` must be identical to their corresponding iOS configuration.
+
 ### Debugging
 
 Hypertrace SDK provides the following classes for debugging purposes:
@@ -180,3 +185,4 @@ For more information visit [https://android-developers.googleblog.com/2020/04/go
 **0.9.0**
 
 - First release.
+
