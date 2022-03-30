@@ -131,8 +131,10 @@ object HyperTraceSdk {
             val scanDuration: Long = 10_000,
             val minScanInterval: Long = 30_000,
             val maxScanInterval: Long = 40_000,
-            val advertisingDuration: Long = 180_000, // 30 minutes
-            val advertisingInterval: Long = 6_000,
+            val advertising: Advertising = Advertising.Enable(
+                    duration = 180_000, // 30 minutes
+                    interval = 6_000,
+            ),
             val purgeRecordInterval: Long = 86_400_000, // 24 hours
             val recordTTL: Long = 1_814_400_000, // 21 days
             val maxPeripheralQueueTime: Long = 10_000,
@@ -144,8 +146,16 @@ object HyperTraceSdk {
             val okHttpConfig: (OkHttpClient.Builder.() -> Unit)? = null
     ) {
 
+        sealed class Advertising {
+
+            @Keep
+            object Disable : Advertising()
+
+            @Keep
+            class Enable(val duration: Long, val interval: Long) : Advertising()
+        }
+
         fun validateConfig() {
-            if (userId.length < 21) throw Exception("User ID must have exactly 21 characters.")
             if (organization.isEmpty()) throw Exception("Organization Code cannot be empty.")
             if (baseUrl.isEmpty()) throw Exception("Base URL cannot be empty.")
             if (baseUrl.last() != '/') throw Exception("Base URL must end with slash '/'.")

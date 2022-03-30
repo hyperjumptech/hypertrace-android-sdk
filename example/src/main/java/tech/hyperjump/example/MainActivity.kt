@@ -16,11 +16,11 @@ import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.lifecycleScope
+import io.bluetrace.opentrace.streetpassdebug.StreetPassDebugActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import pub.devrel.easypermissions.EasyPermissions
 import tech.hyperjump.hypertrace.HyperTraceSdk
 import tech.hyperjump.hypertrace.scandebug.ScanDebugActivity
-import io.bluetrace.opentrace.streetpassdebug.StreetPassDebugActivity
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import javax.net.ssl.SSLContext
@@ -121,6 +121,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     }
 
     private fun buildConfig(): HyperTraceSdk.Config {
+        // hypertrace server requires uid to be 21 character length
         userId = generateUserId(21)
         // FIXME change to hypertrace server implementation
         val baseUrl = "https://192.108.0.0/"
