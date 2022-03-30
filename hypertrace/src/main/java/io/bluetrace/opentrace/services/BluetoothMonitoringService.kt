@@ -21,12 +21,6 @@ import io.bluetrace.opentrace.bluetooth.gatt.STREET_PASS
 import io.bluetrace.opentrace.idmanager.TempIDManager
 import io.bluetrace.opentrace.idmanager.TemporaryID
 import io.bluetrace.opentrace.logging.CentralLog
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import pub.devrel.easypermissions.EasyPermissions
-import tech.hyperjump.hypertrace.*
 import io.bluetrace.opentrace.status.Status
 import io.bluetrace.opentrace.status.persistence.StatusRecord
 import io.bluetrace.opentrace.status.persistence.StatusRecordStorage
@@ -36,6 +30,14 @@ import io.bluetrace.opentrace.streetpass.StreetPassServer
 import io.bluetrace.opentrace.streetpass.StreetPassWorker
 import io.bluetrace.opentrace.streetpass.persistence.StreetPassRecord
 import io.bluetrace.opentrace.streetpass.persistence.StreetPassRecordStorage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import pub.devrel.easypermissions.EasyPermissions
+import tech.hyperjump.hypertrace.BuildConfig
+import tech.hyperjump.hypertrace.HyperTraceSdk
+import tech.hyperjump.hypertrace.R
 import java.lang.ref.WeakReference
 import kotlin.coroutines.CoroutineContext
 
@@ -325,7 +327,10 @@ class BluetoothMonitoringService : Service(), CoroutineScope {
     private fun actionAdvertise() {
         setupAdvertiser()
         if (isBluetoothEnabled()) {
-            advertiser?.startAdvertising(advertisingDuration)
+            val duration = HyperTraceSdk.CONFIG.advertising.let {
+                if (it is HyperTraceSdk.Config.Advertising.Enable) it.duration else 0
+            }
+            advertiser?.startAdvertising(duration)
         } else {
             CentralLog.w(TAG, "Unable to start advertising, bluetooth is off")
         }
@@ -357,6 +362,8 @@ class BluetoothMonitoringService : Service(), CoroutineScope {
     }
 
     private fun setupAdvertisingCycles() {
+        // ignore if disabled
+        if (HyperTraceSdk.CONFIG.advertising is HyperTraceSdk.Config.Advertising.Disable) return
         commandHandler.scheduleNextAdvertise(0)
     }
 
@@ -377,8 +384,12 @@ class BluetoothMonitoringService : Service(), CoroutineScope {
     }
 
     private fun scheduleAdvertisement() {
-        if (!infiniteAdvertising) {
-            commandHandler.scheduleNextAdvertise(advertisingDuration + advertisingGap)
+        // ignore if disabled
+        if (HyperTraceSdk.CONFIG.advertising is HyperTraceSdk.Config.Advertising.Disable) return
+        val advertisingConfig = HyperTraceSdk.CONFIG.advertising
+        if (!infiniteAdvertising && advertisingConfig is HyperTraceSdk.Config.Advertising.Enable) {
+            val delay = advertisingConfig.duration + advertisingConfig.interval
+            commandHandler.scheduleNextAdvertise(delay)
         }
     }
 
@@ -429,6 +440,8 @@ class BluetoothMonitoringService : Service(), CoroutineScope {
         }
 
         if (!infiniteAdvertising) {
+            // ignore if disabled
+            if (HyperTraceSdk.CONFIG.advertising is HyperTraceSdk.Config.Advertising.Disable) return
             if (!commandHandler.hasAdvertiseScheduled()) {
                 CentralLog.w(TAG, "Missing Advertise Schedule - rectifying")
 //                setupAdvertisingCycles()
@@ -637,14 +650,10 @@ class BluetoothMonitoringService : Service(), CoroutineScope {
 
         var broadcastMessage: TemporaryID? = null
 
-        //should be more than advertising gap?
+        //should be more than advertising interval
         val scanDuration: Long = HyperTraceSdk.CONFIG.scanDuration
         val minScanInterval: Long = HyperTraceSdk.CONFIG.minScanInterval
         val maxScanInterval: Long = HyperTraceSdk.CONFIG.maxScanInterval
-
-        val advertisingDuration: Long = HyperTraceSdk.CONFIG.advertisingDuration
-        val advertisingGap: Long = HyperTraceSdk.CONFIG.advertisingInterval
-
         val maxQueueTime: Long = HyperTraceSdk.CONFIG.maxPeripheralQueueTime
         val bmCheckInterval: Long = HyperTraceSdk.CONFIG.temporaryIdCheckInterval
         val healthCheckInterval: Long = HyperTraceSdk.CONFIG.bluetoothServiceHeartBeat
