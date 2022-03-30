@@ -148,8 +148,10 @@ object HyperTraceSdk {
 
         sealed class Advertising {
 
+            @Keep
             object Disable : Advertising()
 
+            @Keep
             class Enable(val duration: Long, val interval: Long) : Advertising()
         }
 
