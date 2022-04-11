@@ -48,7 +48,7 @@
         </receiver>
 
         <service
-            android:name="tech.hyperjump.hypertrace.io.bluetrace.opentrace.services.BluetoothMonitoringService"
+            android:name="io.bluetrace.opentrace.services.BluetoothMonitoringService"
             android:foregroundServiceType="location" />
 
         <activity
@@ -58,13 +58,13 @@
             android:theme="@style/AppTheme.DebugNoActionBar" />
 
         <activity
-            android:name="tech.hyperjump.hypertrace.io.bluetrace.opentrace.streetpassdebug.StreetPassDebugActivity"
+            android:name="io.bluetrace.opentrace.streetpassdebug.StreetPassDebugActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.DebugNoActionBar" />
 
         <receiver
-            android:name="tech.hyperjump.hypertrace.io.bluetrace.opentrace.receivers.UpgradeReceiver"
+            android:name="io.bluetrace.opentrace.receivers.UpgradeReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
